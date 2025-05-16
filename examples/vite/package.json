@@ -13,14 +13,15 @@
   },
   "dependencies": {
     "@m2d/core": "^0.0.4",
-    "@m2d/emoji": "workspace:*",
+    "@m2d/emoji": "latest",
     "@repo/shared": "workspace:*",
     "nextjs-darkmode": "^1.0.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-mouse-trails": "^0.0.5",
     "react18-loaders": "^1.1.4",
-    "react18-themes": "^3.2.0"
+    "react18-themes": "^3.2.0",
+    "@m2d/jsx": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
