@@ -151,3 +151,18 @@ export const emptyHtmlTags: (keyof (HTMLElementTagNameMap & SVGElementTagNameMap
   "hr",
   "img",
 ];
+
+/**
+ * Converts a raw SVG string into a base64-encoded data URL.
+ */
+export const svgToBase64DataUrl = (svg: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const reader = new FileReader();
+
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+};

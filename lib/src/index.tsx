@@ -14,11 +14,18 @@ import {
   Data,
   Checkbox,
   Code,
+  SVG,
 } from "mdast2docx";
 import { FC, Fragment, HTMLProps, RefObject, useEffect, useState } from "react";
 import remarkParse from "remark-parse";
 import { PluggableList, unified } from "unified";
-import { createStylesFromData, emptyHtmlTags, mdast2HtmlTagMap, uuid } from "./utils";
+import {
+  createStylesFromData,
+  emptyHtmlTags,
+  mdast2HtmlTagMap,
+  svgToBase64DataUrl,
+  uuid,
+} from "./utils";
 import { ErrorBoundary } from "react-error-boundary";
 
 interface ReactMarkdownProps extends HTMLProps<HTMLDivElement> {
@@ -45,6 +52,30 @@ interface MdProps {
   node: RootContent;
   components?: Partial<Record<keyof (HTMLElementTagNameMap & SVGElementTagNameMap), FC>>;
 }
+
+interface SVGProps {
+  node: SVG;
+  components?: Partial<Record<keyof (HTMLElementTagNameMap & SVGElementTagNameMap), FC>>;
+  props?: HTMLProps<HTMLElement>;
+}
+
+const SVGComponent = ({ node, components, props }: SVGProps) => {
+  const [jsx, setJsx] = useState(<i>loading...</i>);
+  useEffect(() => {
+    (async () => {
+      const svg = typeof node.value === "string" ? node.value : (await node.value)?.svg;
+      console.log("svg: ", svg);
+      if (components?.svg) {
+        // @ts-expect-error -- complex props
+        setJsx(<components.svg node={node} {...props} svg={svg} />);
+      } else {
+        // @ts-expect-error -- complex props
+        setJsx(svg ? <img src={await svgToBase64DataUrl(svg)} {...props} /> : <></>);
+      }
+    })();
+  }, [components, node, props]);
+  return jsx;
+};
 
 const Md = ({ node, components }: MdProps) => {
   const data = node.data as Data | undefined;
@@ -94,8 +125,10 @@ const Md = ({ node, components }: MdProps) => {
   const TBody =
     tag === "table" && (node as Parent).children?.[0].type === "tableRow" ? "tbody" : Fragment;
 
-  return (
-    <ErrorBoundary fallback="something went wrong here" onError={console.error}>
+  return node.type === "svg" ? (
+    <SVGComponent {...{ node: node as SVG, components, props }} />
+  ) : (
+    <ErrorBoundary fallback={<i>⚠ unknown error!</i>} onError={console.error}>
       {tag && emptyHtmlTags.includes(tag) ? (
         // @ts-expect-error -- too complex props
         <TagComponent {...props} node={node} />
