@@ -4,6 +4,15 @@ import Markdown from "../src";
 import React from "react";
 import md from "../../sample.md?raw";
 import remarkGfm from "remark-gfm";
+import {
+  tablePlugin,
+  listPlugin,
+  mathPlugin,
+  imagePlugin,
+  htmlPlugin,
+  mermaidPlugin,
+  emojiPlugin,
+} from "mdast2docx/plugins";
 
 // ../__tests__/index.test.tsx
 
@@ -16,8 +25,29 @@ describe.concurrent("Markdown", () => {
     expect(screen.getByText("world")).toBeInTheDocument();
   });
 
-  test("render sample.md", () => {
-    render(<Markdown remarkPlugins={[remarkGfm]}>{md}</Markdown>);
+  test.only("render sample.md", async ({ expect }) => {
+    const docxRef = { current: undefined } as React.RefObject<
+      Promise<string | ArrayBuffer | Blob | Buffer> | undefined
+    >;
+    await render(
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        docxPlugins={[
+          htmlPlugin(),
+          mermaidPlugin({ cacheConfig: { cacheMode: "memory" } }),
+          tablePlugin(),
+          listPlugin(),
+          emojiPlugin(),
+          mathPlugin(),
+          imagePlugin({ cacheConfig: { cacheMode: "memory" } }),
+        ]}
+        docxRef={docxRef}>
+        {md}
+      </Markdown>,
+    );
+
+    const docxBlob = await docxRef.current;
+    expect(docxBlob).toBeInstanceOf(Blob);
   });
 
   test("renders headings", ({ expect }) => {
