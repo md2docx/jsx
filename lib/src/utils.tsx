@@ -150,6 +150,7 @@ export const emptyHtmlTags: (keyof (HTMLElementTagNameMap & SVGElementTagNameMap
   "br",
   "hr",
   "img",
+  "input",
 ];
 
 /**

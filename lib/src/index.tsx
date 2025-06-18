@@ -15,6 +15,7 @@ import {
   Checkbox,
   Code,
   SVG,
+  Image,
 } from "mdast2docx";
 import { FC, Fragment, HTMLProps, RefObject, useEffect, useState } from "react";
 import remarkParse from "remark-parse";
@@ -64,7 +65,6 @@ const SVGComponent = ({ node, components, props }: SVGProps) => {
   useEffect(() => {
     (async () => {
       const svg = typeof node.value === "string" ? node.value : (await node.value)?.svg;
-      console.log("svg: ", svg);
       if (components?.svg) {
         // @ts-expect-error -- complex props
         setJsx(<components.svg node={node} {...props} svg={svg} />);
@@ -82,7 +82,9 @@ const Md = ({ node, components }: MdProps) => {
   const props = {} as HTMLProps<HTMLElement>;
   const type = (node.type || node._type) as keyof RootContentMap;
 
+  if (data) props.style = createStylesFromData(data);
   props.type = data?.type;
+
   switch (type) {
     case "checkbox":
       props.defaultChecked = (node as Checkbox).checked;
@@ -91,11 +93,17 @@ const Md = ({ node, components }: MdProps) => {
       props.className = `language-${(node as Code).lang}`;
       break;
   }
-  if (data) props.style = createStylesFromData(data);
 
   let tag: keyof (HTMLElementTagNameMap & SVGElementTagNameMap) | "" | undefined = data?.tag;
 
   switch (type) {
+    // @ts-expect-error -- available if using remark-math
+    case "math":
+    // @ts-expect-error -- available if using remark-math
+    // eslint-disable-next-line no-fallthrough
+    case "inlineMath":
+      tag ??= "code";
+      break;
     case "heading":
       tag ??= `h${(node as Heading).depth}`;
       break;
@@ -111,6 +119,7 @@ const Md = ({ node, components }: MdProps) => {
     case "linkReference":
       return null;
     case "svg":
+      tag ??= "svg";
       break;
     case "fragment":
     case "empty":
@@ -120,25 +129,39 @@ const Md = ({ node, components }: MdProps) => {
       tag ??= mdast2HtmlTagMap[type];
   }
 
-  const TagComponent = tag ? (components?.[tag] ?? tag) : Fragment;
+  const children =
+    (node as Parent).children?.map(node1 => <Md node={node1} key={uuid()} />) ??
+    (node as Literal).value;
+
+  if (!tag) return <Fragment>{children}</Fragment>;
+
+  const TagComponent = components?.[tag] ?? tag;
 
   const TBody =
     tag === "table" && (node as Parent).children?.[0].type === "tableRow" ? "tbody" : Fragment;
 
+  if (tag === "img") {
+    props.src = (node as Image).url;
+    props.alt = (node as Image).alt ?? "";
+  }
+
   return node.type === "svg" ? (
     <SVGComponent {...{ node: node as SVG, components, props }} />
   ) : (
-    <ErrorBoundary fallback={<i>⚠ unknown error!</i>} onError={console.error}>
+    <ErrorBoundary
+      fallback={<i>⚠ unknown error!</i>}
+      onError={(error, info) => {
+        console.error(error);
+        console.info(info);
+        console.debug("node: ", node);
+      }}>
       {tag && emptyHtmlTags.includes(tag) ? (
         // @ts-expect-error -- too complex props
         <TagComponent {...props} node={node} />
       ) : (
         // @ts-expect-error -- too complex props
         <TagComponent {...props} node={node}>
-          <TBody>
-            {(node as Parent).children?.map(node1 => <Md node={node1} key={uuid()} />) ??
-              (node as Literal).value}
-          </TBody>
+          <TBody>{children}</TBody>
         </TagComponent>
       )}
     </ErrorBoundary>
