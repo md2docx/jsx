@@ -32,7 +32,9 @@ import { ErrorBoundary } from "react-error-boundary";
 
 interface ReactMarkdownProps extends HTMLProps<HTMLDivElement> {
   children?: string;
-  components?: Partial<Record<keyof HTMLElementTagNameMap, FC>>;
+  components?: Partial<
+    Record<keyof HTMLElementTagNameMap, FC<HTMLProps<HTMLElement> & { node?: RootContent }>>
+  >;
   remarkPlugins?: PluggableList;
   docxProps?: IDocxProps;
   sectionProps?: ISectionProps;

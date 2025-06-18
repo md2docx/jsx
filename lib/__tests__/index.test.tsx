@@ -3,6 +3,7 @@ import { afterEach, describe, test } from "vitest";
 import Markdown from "..";
 import React from "react";
 import md from "../../sample.md?raw";
+import remarkGfm from "remark-gfm";
 
 // ../__tests__/index.test.tsx
 
@@ -16,13 +17,13 @@ describe.concurrent("Markdown", () => {
   });
 
   test("render sample.md", () => {
-    render(<Markdown>{md}</Markdown>);
+    render(<Markdown remarkPlugins={[remarkGfm]}>{md}</Markdown>);
   });
 
   test("renders headings", ({ expect }) => {
-    render(<Markdown>{"# Heading 1\n## Heading 2"}</Markdown>);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Heading 1");
-    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Heading 2");
+    render(<Markdown>{"# My heading test - Heading 1\n## My heading test - Heading 2"}</Markdown>);
+    expect(screen.getByText("My heading test - Heading 1").parentElement?.tagName).toBe("H1");
+    expect(screen.getByText("My heading test - Heading 2").parentElement?.tagName).toBe("H2");
   });
 
   test("renders lists", ({ expect }) => {
@@ -44,7 +45,7 @@ describe.concurrent("Markdown", () => {
   });
 
   test("renders with custom components", ({ expect }) => {
-    const CustomH1 = ({ children }: { children: React.ReactNode }) => (
+    const CustomH1 = ({ children }: { children?: React.ReactNode }) => (
       <h1 data-testid="custom">{children}</h1>
     );
     render(<Markdown components={{ h1: CustomH1 }}>{"# Custom Heading"}</Markdown>);
@@ -57,7 +58,7 @@ describe.concurrent("Markdown", () => {
   });
 
   test("renders checkboxes", ({ expect }) => {
-    render(<Markdown>{"- [x] checked\n- [ ] unchecked"}</Markdown>);
+    render(<Markdown remarkPlugins={[remarkGfm]}>{"- [x] checked\n- [ ] unchecked"}</Markdown>);
     const checkboxes = screen.getAllByRole("checkbox");
     expect(checkboxes[0]).toBeChecked();
     expect(checkboxes[1]).not.toBeChecked();
