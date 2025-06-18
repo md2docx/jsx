@@ -67,7 +67,7 @@ const SVGComponent = ({ node, components, props }: SVGProps) => {
       const svg = typeof node.value === "string" ? node.value : (await node.value)?.svg;
       if (components?.svg) {
         // @ts-expect-error -- complex props
-        setJsx(<components.svg node={node} {...props} svg={svg} />);
+        setJsx(<components.svg {...props} svg={svg} />);
       } else {
         // @ts-expect-error -- complex props
         setJsx(svg ? <img src={await svgToBase64DataUrl(svg)} {...props} /> : <></>);
@@ -79,7 +79,7 @@ const SVGComponent = ({ node, components, props }: SVGProps) => {
 
 const Md = ({ node, components }: MdProps) => {
   const data = node.data as Data | undefined;
-  const props = {} as HTMLProps<HTMLElement>;
+  const props = {} as HTMLProps<HTMLElement> & { node?: RootContent };
   const type = (node.type || node._type) as keyof RootContentMap;
 
   if (data) props.style = createStylesFromData(data);
@@ -137,6 +137,8 @@ const Md = ({ node, components }: MdProps) => {
 
   const TagComponent = components?.[tag] ?? tag;
 
+  if (typeof TagComponent !== "string") props.node = node;
+
   const TBody =
     tag === "table" && (node as Parent).children?.[0].type === "tableRow" ? "tbody" : Fragment;
 
@@ -155,12 +157,12 @@ const Md = ({ node, components }: MdProps) => {
         console.info(info);
         console.debug("node: ", node);
       }}>
-      {tag && emptyHtmlTags.includes(tag) ? (
+      {typeof TagComponent === "string" && tag && emptyHtmlTags.includes(tag) ? (
         // @ts-expect-error -- too complex props
-        <TagComponent {...props} node={node} />
+        <TagComponent {...props} />
       ) : (
         // @ts-expect-error -- too complex props
-        <TagComponent {...props} node={node}>
+        <TagComponent {...props}>
           <TBody>{children}</TBody>
         </TagComponent>
       )}
