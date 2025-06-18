@@ -94,31 +94,6 @@ globalThis.Image = class {
   }
 } as unknown as typeof Image;
 
-const originalCreateElement = document.createElement;
-
-document.createElement = vi.fn((tagName: string) => {
-  if (tagName.toLowerCase() === "img") {
-    const fakeImg: any = {
-      _src: "",
-      width: 100,
-      height: 100,
-      set src(value: string) {
-        this._src = value;
-        // Simulate async load
-        setTimeout(() => this.onload?.(), 1);
-      },
-      get src() {
-        return this._src;
-      },
-      onload: null,
-      onerror: null,
-    };
-    return fakeImg;
-  }
-
-  return originalCreateElement.call(document, tagName);
-});
-
 vi.mock("@m2d/mermaid", () => {
   const preprocess = (node: Root | RootContent | PhrasingContent) => {
     // Preprocess the AST to detect and cache Mermaid or Mindmap blocks

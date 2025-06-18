@@ -10,8 +10,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["@testing-library/jest-dom/vitest", "vitest.setup.ts"],
     coverage: {
-      // include: ["src/**"],
-      // exclude: ["src/**/*.test.*", "src/**/declaration.d.ts"],
+      include: ["src/**"],
+      exclude: ["src/**/*.test.*", "src/**/declaration.d.ts"],
       reporter: ["text", "json", "clover", "html"],
     },
   },
