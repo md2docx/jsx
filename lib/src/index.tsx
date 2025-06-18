@@ -1,21 +1,22 @@
 import { OutputType } from "docx";
 import {
-  IPlugin,
+  type IPlugin,
+  type IDocxProps,
+  type ISectionProps,
+  type RootContent,
+  type Root,
+  type Parent,
+  type Literal,
+  type Heading,
+  type List,
+  type RootContentMap,
+  type Data,
+  type Checkbox,
+  type Code,
+  type SVG,
+  type Image,
   toDocx,
-  IDocxProps,
-  ISectionProps,
-  RootContent,
-  Root,
-  Parent,
-  Literal,
-  Heading,
-  List,
-  RootContentMap,
-  Data,
-  Checkbox,
-  Code,
-  SVG,
-  Image,
+  ListItem,
 } from "mdast2docx";
 import { FC, Fragment, HTMLProps, RefObject, useEffect, useState } from "react";
 import remarkParse from "remark-parse";
@@ -38,14 +39,15 @@ interface ReactMarkdownProps extends HTMLProps<HTMLDivElement> {
   docxPlugins?: IPlugin[];
   outputType?: OutputType;
   docxRef?: RefObject<
-    Promise<
-      | string
-      | readonly number[]
-      | ArrayBuffer
-      | Uint8Array<ArrayBufferLike>
-      | Blob
-      | Buffer<ArrayBufferLike>
-    >
+    | Promise<
+        | string
+        | readonly number[]
+        | ArrayBuffer
+        | Uint8Array<ArrayBufferLike>
+        | Blob
+        | Buffer<ArrayBufferLike>
+      >
+    | undefined
   >;
 }
 
@@ -148,6 +150,24 @@ const Md = ({ node, components }: MdProps) => {
     props.alt = (node as Image).alt ?? "";
   }
 
+  const GFMCheckbox = typeof (node as ListItem).checked === "boolean" && (
+    <input
+      type="checkbox"
+      style={{ position: "absolute", left: "-1.75rem", top: ".05rem" }}
+      defaultChecked={(node as ListItem).checked ?? false}
+      readOnly
+    />
+  );
+
+  if (GFMCheckbox) {
+    props.className = "task-list-item";
+    props.style = {
+      ...props.style,
+      listStyleType: "none",
+      position: "relative",
+    };
+  }
+
   return node.type === "svg" ? (
     <SVGComponent {...{ node: node as SVG, components, props }} />
   ) : (
@@ -164,6 +184,7 @@ const Md = ({ node, components }: MdProps) => {
       ) : (
         // @ts-expect-error -- too complex props
         <TagComponent {...props}>
+          {GFMCheckbox}
           <TBody>{children}</TBody>
         </TagComponent>
       )}
