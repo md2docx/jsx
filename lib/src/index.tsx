@@ -102,13 +102,14 @@ const Md = ({ node, components }: MdProps) => {
     // @ts-expect-error -- available if using remark-math
     // eslint-disable-next-line no-fallthrough
     case "inlineMath":
-      tag ??= "code";
+      console.log(node);
+      tag ||= "code";
       break;
     case "heading":
-      tag ??= `h${(node as Heading).depth}`;
+      tag ||= `h${(node as Heading).depth}`;
       break;
     case "list":
-      tag ??= (node as List).ordered ? "ol" : "ul";
+      tag ||= (node as List).ordered ? "ol" : "ul";
       break;
     case "html":
     case "definition":
@@ -119,14 +120,14 @@ const Md = ({ node, components }: MdProps) => {
     case "linkReference":
       return null;
     case "svg":
-      tag ??= "svg";
+      tag ||= "svg";
       break;
     case "fragment":
     case "empty":
-      tag ??= "";
+      tag ||= "";
       break;
     default:
-      tag ??= mdast2HtmlTagMap[type];
+      tag ||= mdast2HtmlTagMap[type];
   }
 
   const children =
