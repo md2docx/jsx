@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, test } from "vitest";
-import Markdown from "..";
+import Markdown from "../src";
 import React from "react";
 import md from "../../sample.md?raw";
 import remarkGfm from "remark-gfm";
