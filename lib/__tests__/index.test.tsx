@@ -25,7 +25,7 @@ describe.concurrent("Markdown", () => {
     expect(screen.getByText("world")).toBeInTheDocument();
   });
 
-  test.only("render sample.md", async ({ expect }) => {
+  test("render sample.md", async ({ expect }) => {
     const docxRef = { current: undefined } as React.RefObject<
       Promise<string | ArrayBuffer | Blob | Buffer> | undefined
     >;
