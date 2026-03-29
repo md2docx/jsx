@@ -1,7 +1,7 @@
 {
-	"recommendations": [
-		"esbenp.prettier-vscode",
-		"mayank1513.trello-kanban-task-board",
-		"mayank1513.promptshield"
-	]
+  "recommendations": [
+    "mayank1513.promptshield",
+    "mayank1513.trello-kanban-task-board",
+    "mayank1513.promptshield"
+  ]
 }
